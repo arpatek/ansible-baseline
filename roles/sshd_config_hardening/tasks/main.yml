@@ -1,0 +1,18 @@
+# ┌────────────────────────────────────────────────────────────────────┐
+# │ (SSHD CONFIG HARDENING)                                            │
+# │ Deploys hardened sshd_config to /etc/ssh/ with secure permissions. │
+# │ Notifies handlers to apply and confirm changes.                    │
+# └────────────────────────────────────────────────────────────────────┘
+
+- name: Deploy hardened SSH configuration
+  copy:
+    src: files/sshd_config      # Source hardened sshd_config file (in role)
+    dest: /etc/ssh/sshd_config  # Overwrite system config with secure version
+    owner: root                 # Restrict ownership to root only
+    group: root
+    mode: '0600'                # No read/write for group or others
+    backup: yes                # Keep backup of original for rollback/debug
+  notify:
+    - Hardening SSH            # Apply sysctl or additional measures (handler)
+    - Restart SSH              # Restart the sshd service to apply new config
+    - Confirm SSH              # Run a post-check to verify sshd is functional

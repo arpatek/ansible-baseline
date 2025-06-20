@@ -1,0 +1,33 @@
+# ┌────────────────────────────────────────────────────────────────────┐
+# │ (HARDENED SSH CONFIGURATION)                                       │
+# │ Core security-focused SSH parameters for production/dev VMs.       │
+# │ Designed to reduce attack surface and improve login discipline.    │
+# └────────────────────────────────────────────────────────────────────┘
+
+Port 22                          # Default SSH port (change if obfuscation is desired)
+Protocol 2                       # Use only SSH protocol version 2
+MaxAuthTries 3                   # Limit failed login attempts per session
+LoginGraceTime 30                # Allow 30 seconds to authenticate
+
+PermitRootLogin no              # Disallow root SSH login
+PasswordAuthentication yes      # Allow password authentication
+PubkeyAuthentication yes        # Allow public key authentication
+ChallengeResponseAuthentication no  # Disable challenge/response (e.g., keyboard-interactive)
+UsePAM yes                      # Enable Pluggable Authentication Modules
+
+# AllowTcpForwarding no         # Disable port forwarding (uncomment to enforce)
+X11Forwarding no                # Disable X11 forwarding to reduce risk
+PermitEmptyPasswords no         # Prevent logins with empty passwords
+
+Subsystem sftp /usr/lib/openssh/sftp-server  # SFTP subsystem path
+
+# ── (OPTIONAL HARDENING FLAGS) ────────────────────────────────────────
+
+# AuthenticationMethods publickey,password
+# Enforce two-factor authentication (uncomment to require both)
+
+# Match Address 10.0.0.0/24
+#     PermitRootLogin no
+#     PasswordAuthentication no
+#     AllowUsers devops_team
+# IP-based restrictions for specific networks (uncomment and customize)

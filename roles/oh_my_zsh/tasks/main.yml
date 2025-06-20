@@ -1,0 +1,49 @@
+# ┌──────────────────────────────────────────────────────────────┐
+# │ Role: oh_my_zsh                                              │
+# │ Installs Oh My Zsh in unattended mode, applies custom theme  │
+# │ and drops .zshrc + .zsh_aliases into user's home directory.  │
+# └──────────────────────────────────────────────────────────────┘
+
+- name: Install Oh-My-Zsh unattended
+  become: true
+  become_user: "{{ ansible_user }}"   # Run as the target user (not root)
+  shell: >
+    /bin/sh -c "$(/usr/bin/curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  args:
+    creates: /home/{{ ansible_user }}/.oh-my-zsh  # Prevents re-running if already installed
+
+# ----------------------------------------------------------------
+# Copy .zshrc with GG3-specific config and disable default prompt
+# ----------------------------------------------------------------
+- name: Copy .zshrc to user's home directory
+  copy:
+    src: files/zshrc
+    dest: /home/{{ ansible_user }}/.zshrc
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+    backup: yes            # Backup existing .zshrc if present
+  notify: .zshrc set        # Triggers a handler if defined
+
+# ----------------------------------------------------------------
+# Add GG3 aliases for DevOps and scripting
+# ----------------------------------------------------------------
+- name: Copy .zsh_aliases to user's home directory
+  copy:
+    src: files/zsh_aliases
+    dest: /home/{{ ansible_user }}/.zsh_aliases
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+    backup: yes
+  notify: aliases set       # Triggers handler (optional)
+
+# ----------------------------------------------------------------
+# Install custom GG3 theme into Oh My Zsh themes directory
+# ----------------------------------------------------------------
+- name: Copy custom gg3.zsh-theme to Oh-My-Zsh
+  copy:
+    src: files/gg3.zsh-theme
+    dest: /home/{{ ansible_user }}/.oh-my-zsh/custom/themes/gg3.zsh-theme
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"

@@ -1,0 +1,17 @@
+# ┌──────────────────────────────────────────────────────────────┐
+# │ Handlers for oh_my_zsh role                                  │
+# │ These are triggered by file copy tasks to confirm success or │
+# │ perform optional follow-up actions like reloading the shell. │
+# └──────────────────────────────────────────────────────────────┘
+
+- name: .zshrc set
+  debug:
+    msg: ".zshrc has been updated."    # Confirms the new .zshrc was copied
+
+- name: aliases set
+  debug:
+    msg: ".zsh_aliases has been applied."    # Confirms alias file is in place
+
+- name: theme set
+  debug:
+    msg: "gg3.zsh-theme has been installed."    # Confirms custom theme deployment

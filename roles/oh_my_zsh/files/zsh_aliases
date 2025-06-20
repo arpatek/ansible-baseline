@@ -1,0 +1,103 @@
+# ┌──────────────────────────────────────────────────────────────┐
+# │ GG3 DevNet – Zsh Aliases                                     │
+# │ Custom aliases to streamline CLI work for automation,        │
+# │ scripting, and daily sysadmin/dev tasks. Managed via Ansible.│
+# └──────────────────────────────────────────────────────────────┘
+
+# ------------------------------
+# Basic Quality-of-Life Aliases
+# ------------------------------
+alias ll='ls -lah'              # Long listing with hidden files and human-readable sizes
+alias la='ls -A'                # Show hidden files (except . and ..)
+alias l='ls -CF'                # Classify entries and list in columns
+alias cls='clear'               # Clear terminal
+alias c='clear'                 # Same as above (shortcut)
+alias lll='ls -laSh'            # Sort by size, show human-readable list
+alias bcat='batcat'             # Use bat (batcat) for syntax-highlighted file output
+
+# ------------------------------
+# Navigation
+# ------------------------------
+alias ..='cd ..'                # Go up one directory
+alias ...='cd ../..'            # Go up two directories
+alias ....='cd ../../..'        # Go up three directories
+alias ~='cd ~'                  # Shortcut to home
+
+# ------------------------------
+# Git Shortcuts
+# ------------------------------
+alias gs='git status'           # Git status
+alias ga='git add'              # Stage files
+alias gc='git commit -m'        # Commit with inline message
+alias gp='git push'             # Push to remote
+alias gl='git pull'             # Pull from remote
+alias gd='git diff'             # Show file changes
+alias gco='git checkout'        # Switch branches
+
+# ------------------------------
+# Dotfiles / Shell Config Access
+# ------------------------------
+alias dot='cd ~/.dotfiles'             # Jump to dotfiles directory
+alias zshconfig='nvim ~/.zshrc'        # Edit main Zsh config
+alias aliases='nvim ~/.zsh_aliases'    # Edit this file
+
+# ------------------------------
+# Networking & Tools
+# ------------------------------
+alias ports='lsof -i -P -n'     # List all open network ports
+alias ipinfo='ip a'             # Show all IP addresses
+alias pingg='ping 8.8.8.8'      # Ping Google DNS (quick connectivity check)
+
+# ------------------------------
+# System & Updates
+# ------------------------------
+alias reboot='sudo reboot'                     # Reboot system
+alias shutdown='sudo shutdown now'             # Shutdown immediately
+alias reload='exec zsh'                        # Reload Zsh without logout
+
+# Universal system update alias
+1up() {
+  echo "[*] Running system update..."
+
+  if command -v brew &>/dev/null; then
+    echo "[>] Updating with Homebrew..."
+    brew update && brew upgrade && brew cleanup
+  fi
+
+  if command -v nala &>/dev/null; then
+    echo "[>] Updating with nala..."
+    sudo nala update && sudo nala upgrade -y && sudo nala autoremove -y
+    return
+  elif command -v apt &>/dev/null; then
+    echo "[>] Updating with apt..."
+    sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y
+    return
+  elif command -v dnf &>/dev/null; then
+    echo "[>] Updating with dnf..."
+    sudo dnf upgrade --refresh -y
+    return
+  elif command -v yum &>/dev/null; then
+    echo "[>] Updating with yum..."
+    sudo yum update -y
+    return
+  elif command -v apk &>/dev/null; then
+    echo "[>] Updating with apk (Alpine)..."
+    sudo apk update && sudo apk upgrade
+    return
+  else
+    echo "[!] No supported package manager found."
+    return 1
+  fi
+}
+
+# ------------------------------
+# SSH Shortcuts (GG3 Reserved)
+# ------------------------------
+# Reserved section for future SSH aliases or jump hosts
+# Example:
+# alias devvm='ssh youruser@10.10.10.10'
+
+# ------------------------------
+# Custom Branding (GG3 Style)
+# ------------------------------
+alias gg3='echo "Powered by GG3-DevNet 💻"'

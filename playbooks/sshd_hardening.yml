@@ -1,0 +1,14 @@
+# ┌────────────────────────────────────────────────────────────┐
+# │ SSH Daemon Hardening – Ansible Playbook                    │
+# │ This playbook applies hardened SSH configuration to        │
+# │ the target system by replacing sshd_config and restarting  │
+# │ the SSH service via a role.                                │
+# └────────────────────────────────────────────────────────────┘
+
+- name: Apply Hardened SSH Configuration
+  hosts: "{{ host }}"       # Target host group (use -e "host=dev" or replace with 'all')
+  become: yes               # Required for modifying /etc/ssh/sshd_config
+
+  roles:
+    - sshd_config_hardening  # Role located at roles/sshd_config_hardening/
+                             # Applies secure sshd_config and handles restart

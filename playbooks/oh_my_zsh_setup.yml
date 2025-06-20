@@ -1,0 +1,12 @@
+# ┌──────────────────────────────────────────────────────────────┐
+# │ Oh My Zsh Setup – Ansible Playbook                           │
+# │ Installs Oh My Zsh, applies the gg3.zsh-theme, and copies    │
+# │ custom zsh config files including .zshrc and .zsh_aliases.   │
+# └──────────────────────────────────────────────────────────────┘
+
+- name: Setup Oh-My-Zsh with custom .zshrc .zsh_aliases & gg3.zsh-theme
+  hosts: "{{ host }}"        # Dynamic variable to target a host group (e.g., -e "host=dev")
+  become: yes                # Run tasks as root or with sudo
+
+  roles:
+    - oh_my_zsh              # Role handles installation, theming, and file placement

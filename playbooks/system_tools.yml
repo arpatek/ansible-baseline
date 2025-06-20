@@ -1,0 +1,13 @@
+# ┌────────────────────────────────────────────────────────────┐
+# │ System Tools Setup – Ansible Playbook                      │
+# │ Installs essential command-line tools and extras useful    │
+# │ for DevOps, networking, and day-to-day development.        │
+# └────────────────────────────────────────────────────────────┘
+
+- name: Deploy terminal tools
+  hosts: "{{ host }}"        # Target group, passed via CLI using: -e "host=dev"
+  become: yes                # Ensures tasks run with sudo/root privileges
+
+  roles:
+    - core_utils             # Installs foundational CLI tools (curl, git, vim, etc.)
+    - extra_utils            # Adds extras like htop, batcat, net-tools, etc.

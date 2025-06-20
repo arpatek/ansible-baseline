@@ -1,0 +1,35 @@
+# ┌────────────────────────────────────────────────────┐
+# │ Role: core_utils                                   │
+# │ Installs basic CLI tools and drops dotfiles        │
+# │ (.vimrc and .gitconfig) into the target home dir.  │
+# └────────────────────────────────────────────────────┘
+
+- name: Install core utils
+  apt:
+    name:
+      - vim        # Text editor for CLI work
+      - curl       # Tool for transferring data over URLs (e.g., API calls)
+      - git        # Version control system
+      - zsh        # Z shell – used later by oh_my_zsh role
+    state: present
+    update_cache: yes  # Ensures package list is up to date
+
+# -----------------------------------------------------
+# Dotfiles installation – ensures consistent CLI env
+# -----------------------------------------------------
+
+- name: Copy .vimrc to user's home directory
+  copy:
+    src: files/vimrc                # Source file in this role's files/ dir
+    dest: /home/{{ ansible_user }}/.vimrc
+    owner: "{{ ansible_user }}"     # Ownership matches ansible_user
+    group: "{{ ansible_user }}"
+    mode: '0644'                    # Readable by user, group, others
+
+- name: Copy .gitconfig to user's home directory
+  copy:
+    src: files/gitconfig
+    dest: /home/{{ ansible_user }}/.gitconfig
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'

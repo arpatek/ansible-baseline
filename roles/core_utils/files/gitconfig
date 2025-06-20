@@ -1,0 +1,45 @@
+# ┌─────────────────────────────────────────────┐
+# │ Git Global Configuration                    │
+# │ This file is copied to ~/.gitconfig via     │
+# │ Ansible to enforce consistent Git behavior. │
+# └─────────────────────────────────────────────┘
+
+[user]
+  name = yourname            # Git user name (used in commits)
+  email = you@example.com    # Git email (used in commits)
+
+[color]
+  ui = auto                  # Enables color output in the terminal (auto-detects if supported)
+
+[alias]
+  st = status                # Shortcut for 'git status'
+  co = checkout              # Shortcut for 'git checkout'
+  br = branch                # Shortcut for 'git branch'
+  cm = commit -m             # Shortcut for 'git commit -m'
+  lg = log --oneline --graph --decorate --all  # Visual history tree of all branches
+  amend = commit --amend --no-edit              # Amends last commit without changing message
+  last = log -1 HEAD         # Shows the last commit
+
+[core]
+  editor = vim               # Sets Vim as the default Git editor
+  autocrlf = input           # Converts CRLF to LF on commit (Linux/macOS safe)
+  pager = most               # Uses 'most' as pager for output (like less, but scrolls better)
+
+[init]
+  defaultBranch = main       # Ensures new repos use 'main' instead of 'master'
+
+[push]
+  default = simple           # Only pushes the current branch to its upstream counterpart
+
+[pull]
+  rebase = false             # Merges when pulling instead of rebasing (safer for new users)
+
+[merge]
+  ff = only                  # Only allows fast-forward merges (prevents accidental merge commits)
+
+[commit]
+  gpgsign = false            # Set to true if you want to sign commits with GPG
+
+[credential]
+  helper = store             # Stores credentials unencrypted in ~/.git-credentials
+                            # ⚠️ Only use this on trusted, non-shared machines!

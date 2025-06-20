@@ -1,0 +1,29 @@
+# ┌──────────────────────────────────────────────────────────────┐
+# │ Role: extra_utils                                            │
+# │ Installs a suite of additional tools useful for networking, │
+# │ terminal UX, system monitoring, scripting, and debugging.   │
+# │ These go beyond core CLI tools and improve daily workflow.  │
+# └──────────────────────────────────────────────────────────────┘
+
+- name: Install extra tools
+  apt:
+    name:
+      - htop              # Interactive process viewer (better than top)
+      - lsof              # Lists open files and network sockets
+      - tar               # Archive and compression tool
+      - unzip             # Unzips .zip archives
+      - tmux              # Terminal multiplexer
+      - tmate             # Instant terminal sharing (used for remote pair programming)
+      - asciinema         # Terminal session recorder
+      - lynx              # Text-based web browser
+      - jq                # Lightweight JSON processor
+      - tree              # Displays directories in tree format
+      - rsync             # File sync and backup tool
+      - bash-completion   # Enables autocompletion for many CLI tools
+      - dialog            # For creating simple TUIs in scripts
+      - most              # Better pager than less or more (used in .vimrc/.gitconfig)
+      - bat               # Syntax-highlighted cat replacement (may show as batcat on some distros)
+      - wget              # File downloader via HTTP/HTTPS/FTP
+      - nala              # Frontend for APT with better UI and speed
+    state: present         # Ensure packages are installed
+    update_cache: yes      # Refresh package lists before installing

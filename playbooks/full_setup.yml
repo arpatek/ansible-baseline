@@ -1,0 +1,16 @@
+# ┌────────────────────────────────────────────────────┐
+# │ Full System Provisioning – Ansible Playbook        │
+# │ This playbook runs all major roles to configure    │
+# │ a Debian-based system with core tools, ZSH,        │
+# │ extra utilities, and hardened SSH.                 │
+# └────────────────────────────────────────────────────┘
+
+- name: Full system provisioning
+  hosts: "{{ host }}"      # Replace via CLI: -e "host=dev" or use inventory groups directly
+  become: yes              # Escalate privileges for all tasks (sudo)
+
+  roles:
+    - core_utils             # Installs essential command-line tools (curl, vim, git, etc.)
+    - extra_utils            # Optional developer tools (htop, bat, net-tools, etc.)
+    - oh_my_zsh              # Installs Oh My Zsh + gg3 custom theme and aliases
+    - sshd_config_hardening  # Overwrites /etc/ssh/sshd_config with secure defaults

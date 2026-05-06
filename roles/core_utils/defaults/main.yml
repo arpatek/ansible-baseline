@@ -1,0 +1,8 @@
+---
+# Default package list for core_utils role.
+# Override in your playbook or inventory vars to customise the installed set.
+core_utils_packages:
+  - vim
+  - curl
+  - git
+  - zsh

@@ -5,13 +5,13 @@
 # └──────────────────────────────────────────────────────────────┘
 
 - name: .zshrc set
-  debug:
-    msg: ".zshrc has been updated."    # Confirms the new .zshrc was copied
+  ansible.builtin.debug:
+    msg: ".zshrc has been updated."
 
 - name: aliases set
-  debug:
-    msg: ".zsh_aliases has been applied."    # Confirms alias file is in place
+  ansible.builtin.debug:
+    msg: ".zsh_aliases has been applied."
 
 - name: theme set
-  debug:
-    msg: "gg3.zsh-theme has been installed."    # Confirms custom theme deployment
+  ansible.builtin.debug:
+    msg: "gg3.zsh-theme has been installed."

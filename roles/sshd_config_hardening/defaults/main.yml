@@ -1,0 +1,2 @@
+---
+# No overridable defaults — SSH configuration is managed via files/sshd_config.

@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: arpatek
+  description: Installs core CLI utilities and dotfiles for Debian-based systems
+  license: MIT
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Debian
+      versions: all
+    - name: Ubuntu
+      versions: all
+dependencies: []

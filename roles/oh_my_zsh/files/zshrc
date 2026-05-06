@@ -94,9 +94,6 @@ source $ZSH/oh-my-zsh.sh
 # Load personal alias file if it exists
 [ -f "$HOME/.zsh_aliases" ] && source "$HOME/.zsh_aliases"
 
-# Load iTerm2 shell integration if installed
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-
 # ── (DEFAULT PAGER SETUP) ─────────────────────────────────────────────
 # Use `most` as the default pager (better for Zsh display)
 export PAGER=most

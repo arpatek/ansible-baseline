@@ -5,31 +5,27 @@
 # └────────────────────────────────────────────────────┘
 
 - name: Install core utils
-  apt:
-    name:
-      - vim        # Text editor for CLI work
-      - curl       # Tool for transferring data over URLs (e.g., API calls)
-      - git        # Version control system
-      - zsh        # Z shell – used later by oh_my_zsh role
+  ansible.builtin.apt:
+    name: "{{ core_utils_packages }}"
     state: present
-    update_cache: yes  # Ensures package list is up to date
-
-# -----------------------------------------------------
-# Dotfiles installation – ensures consistent CLI env
-# -----------------------------------------------------
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+  tags: [install, tools, core]
 
 - name: Copy .vimrc to user's home directory
-  copy:
-    src: files/vimrc                # Source file in this role's files/ dir
+  ansible.builtin.copy:
+    src: files/vimrc
     dest: /home/{{ ansible_user }}/.vimrc
-    owner: "{{ ansible_user }}"     # Ownership matches ansible_user
+    owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: '0644'                    # Readable by user, group, others
+    mode: '0644'
+  tags: [dotfiles, core]
 
 - name: Copy .gitconfig to user's home directory
-  copy:
+  ansible.builtin.copy:
     src: files/gitconfig
     dest: /home/{{ ansible_user }}/.gitconfig
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: '0644'
+  tags: [dotfiles, core]

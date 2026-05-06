@@ -1,0 +1,22 @@
+---
+# Default package list for extra_utils role.
+# Override in your playbook or inventory vars to customise the installed set.
+extra_utils_packages:
+  - htop
+  - lsof
+  - tar
+  - unzip
+  - tmux
+  - tmate
+  - asciinema
+  - lynx
+  - jq
+  - tree
+  - rsync
+  - bash-completion
+  - dialog
+  - most
+  - bat
+  - wget
+  - nala
+  - neovim

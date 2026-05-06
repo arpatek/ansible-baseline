@@ -10,7 +10,7 @@ MaxAuthTries 3                   # Limit failed login attempts per session
 LoginGraceTime 30                # Allow 30 seconds to authenticate
 
 PermitRootLogin no              # Disallow root SSH login
-PasswordAuthentication yes      # Allow password authentication
+PasswordAuthentication no       # Disable password authentication — pubkey only
 PubkeyAuthentication yes        # Allow public key authentication
 ChallengeResponseAuthentication no  # Disable challenge/response (e.g., keyboard-interactive)
 UsePAM yes                      # Enable Pluggable Authentication Modules

@@ -7,14 +7,14 @@
 # └────────────────────────────────────────────────────────────────────┘
 
 - name: Hardening SSH
-  debug:
-    msg: "Restarting SSH due to config change..."  # Notify log for traceability
+  ansible.builtin.debug:
+    msg: "Restarting SSH due to config change..."
 
 - name: Restart SSH
-  service:
-    name: ssh       # Systemd service name for sshd
-    state: restarted  # Force restart to load new config
+  ansible.builtin.service:
+    name: ssh
+    state: restarted
 
 - name: Confirm SSH
-  debug:
-    msg: "SSH Restarted successfully. Hardened SSH confirmed"  # Final confirmation for playbook logs
+  ansible.builtin.debug:
+    msg: "SSH restarted successfully. Hardened config confirmed."

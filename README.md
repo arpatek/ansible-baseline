@@ -97,7 +97,3 @@ ansible-playbook playbooks/system_tools.yml -e "host=dev" \
 - Custom Oh My Zsh theme (`gg3`) with Git branch + SHA, Python venv indicator, and smart path truncation
 - Idempotent — safe to re-run; existing config files are backed up before replacement
 - OS family guard on all `apt` tasks (`when: ansible_os_family == "Debian"`)
-
-## License
-
-MIT License. See `LICENSE` for full text.

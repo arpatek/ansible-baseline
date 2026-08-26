@@ -21,7 +21,7 @@ PermitEmptyPasswords no         # Prevent logins with empty passwords
 
 Subsystem sftp /usr/lib/openssh/sftp-server  # SFTP subsystem path
 
-# ── (OPTIONAL HARDENING FLAGS) ────────────────────────────────────────
+# ── (OPTIONAL HARDENING FLAGS) ────────────────────────────────────────────────
 
 # AuthenticationMethods publickey,password
 # Enforce two-factor authentication (uncomment to require both)

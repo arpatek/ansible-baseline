@@ -1,5 +1,7 @@
 # Ansible Baseline
 
+[![built by arpatek](.assets/badge.svg)](https://arpatek.dev)
+
 A modular Ansible setup for provisioning secure, customized Linux development environments. Covers hardened SSH configuration, a POSIX-focused CLI stack, and a themed Oh My Zsh setup — structured for reuse, idempotent re-runs, and selective execution via tags.
 
 ## Requirements

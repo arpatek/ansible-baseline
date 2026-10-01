@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  author: arpatek
+  description: Time synchronisation via chrony, with optional LAN serving
+  license: MIT
+  min_ansible_version: "2.12"
+  platforms:
+    # versions must be a list. A bare `versions: all` scalar is what the current
+    # ansible-lint meta schema rejects, and every other role in this repo still
+    # has it that way.
+    - name: EL
+      versions: ["all"]
+    - name: Debian
+      versions: ["all"]
+    - name: Ubuntu
+      versions: ["all"]
+dependencies: []

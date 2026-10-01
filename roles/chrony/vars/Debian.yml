@@ -1,0 +1,8 @@
+---
+# Verified on Debian 13 (trixie), chrony 4.6.1.
+chrony_package: chrony
+# chronyd.service exists here only as an alias; the real unit is chrony.service.
+chrony_service: chrony
+chrony_config: /etc/chrony/chrony.conf
+# Already registered by the shipped config, so the lineinfile task is a no-op.
+chrony_confdir: /etc/chrony/conf.d

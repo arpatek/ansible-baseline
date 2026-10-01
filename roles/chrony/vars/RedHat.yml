@@ -1,0 +1,8 @@
+---
+# Verified on Rocky Linux 9.8, chrony 4.8.
+chrony_package: chrony
+chrony_service: chronyd
+chrony_config: /etc/chrony.conf
+# Not set by the shipped config, so the role adds it. /etc/chrony.d is the
+# convention upstream documents for RHEL-family packaging.
+chrony_confdir: /etc/chrony.d

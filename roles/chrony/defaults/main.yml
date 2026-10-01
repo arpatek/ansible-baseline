@@ -1,0 +1,33 @@
+---
+# ──[ Sources ]─────────────────────────────────────────────────────────────────
+# Empty by default: the distro ships working pool entries, and a baseline role
+# has no business guessing someone's time source. Override per environment.
+#
+# Use addresses or FQDNs that resolve on the target. A name that resolves
+# somewhere else and not on the host produces a silently dead source — the IPA
+# server in the homelab this was written for carried `server pi.hole iburst`
+# that resolved nowhere, so it synced to the public pool while appearing
+# configured for a local one.
+chrony_servers: []
+#   - 10.0.0.1
+#   - time.example.internal
+
+chrony_pools: []
+#   - 0.pool.ntp.org
+
+# iburst sends the first few probes a second apart instead of minutes, so a
+# freshly booted host converges in seconds. Harmless everywhere.
+chrony_server_options: iburst
+
+# ──[ Serving ]─────────────────────────────────────────────────────────────────
+# Networks allowed to use this host as a time source. Empty means client-only,
+# which is the right default — a host should not serve time unless asked to.
+chrony_allow: []
+#   - 10.0.0.0/24
+
+# ──[ Validation ]──────────────────────────────────────────────────────────────
+# Absolute path, not a bare `chronyd`. Debian's PATH for a non-root user is
+# /usr/local/bin:/usr/bin:/bin:/usr/games — no /usr/sbin — while RHEL's includes
+# it. become gives root a PATH that would find it either way, but depending on
+# that is how a role works until the day something runs it differently.
+chrony_binary: /usr/sbin/chronyd

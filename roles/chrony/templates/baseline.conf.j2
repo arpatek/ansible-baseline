@@ -1,0 +1,28 @@
+# Managed by ansible-baseline, role: chrony. Local edits will be overwritten.
+#
+# Parsed from {{ chrony_confdir }} in lexicographic order. Directives here add to
+# the distro config rather than replacing it, so driftfile, keyfile, leapsectz
+# and rtcsync keep whatever the package set.
+{% if chrony_servers | length > 0 %}
+
+# ──[ Servers ]──
+{% for s in chrony_servers %}
+server {{ s }} {{ chrony_server_options }}
+{% endfor %}
+{% endif %}
+{% if chrony_pools | length > 0 %}
+
+# ──[ Pools ]──
+{% for p in chrony_pools %}
+pool {{ p }} {{ chrony_server_options }}
+{% endfor %}
+{% endif %}
+{% if chrony_allow | length > 0 %}
+
+# ──[ Serving ]──
+# Without an allow line chronyd listens but answers nobody, which looks
+# identical to a firewall problem from the client side.
+{% for net in chrony_allow %}
+allow {{ net }}
+{% endfor %}
+{% endif %}

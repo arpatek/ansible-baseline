@@ -1,0 +1,14 @@
+# ┌────────────────────────────────────────────────────────────┐
+# │ Time Synchronisation – Ansible Playbook                    │
+# │ Installs and configures chrony. Sources and the networks   │
+# │ allowed to use this host as a time source are variables,   │
+# │ so the role carries no site knowledge — set them in the    │
+# │ consuming inventory's group_vars.                          │
+# └────────────────────────────────────────────────────────────┘
+
+- name: Configure time synchronisation
+  hosts: "{{ host | default('all') }}"
+  become: true              # /etc/chrony.conf and the service both need root
+
+  roles:
+    - chrony

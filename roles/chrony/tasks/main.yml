@@ -1,0 +1,100 @@
+# ┌────────────────────────────────────────────────────┐
+# │ Role: chrony                                       │
+# │ Keeps the clock honest. On an IPA realm this is    │
+# │ load-bearing: Kerberos rejects tickets past ~5min  │
+# │ of skew, and that failure looks like an auth bug.  │
+# └────────────────────────────────────────────────────┘
+---
+# Per-distro paths come from vars/{{ ansible_facts['os_family'] }}.yml. They genuinely
+# differ: Rocky 9 keeps the config at /etc/chrony.conf with no confdir set at
+# all, while Debian 13 uses /etc/chrony/chrony.conf and ships
+# confdir /etc/chrony/conf.d already. A drop-in on RHEL is therefore ignored
+# until confdir is registered, which task 3 does.
+# Without this the include below fails with a bare file-not-found, which says
+# nothing about why. Alpine is the case that prompted it — it is in the fleet
+# this was written for, and ansible_facts['os_family'] reports "Alpine" there.
+- name: Fail clearly on an unsupported OS family
+  ansible.builtin.assert:
+    that: ansible_facts['os_family'] in ['RedHat', 'Debian']
+    fail_msg: >-
+      The chrony role supports the RedHat and Debian families; this host reports
+      '{{ ansible_facts['os_family'] }}'. Alpine needs its own implementation rather than
+      another vars file: its chrony package ships only usr/bin/chronyc and
+      usr/sbin/chronyd, with no /etc/chrony/chrony.conf and no init script, so
+      there is no distro config to drop into, and the service comes from
+      chrony-openrc under OpenRC rather than systemd.
+    quiet: true
+  tags: [chrony, always]
+
+- name: Load distro-specific paths
+  ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yml"
+  tags: [chrony, always]
+
+- name: Install chrony
+  ansible.builtin.package:
+    name: "{{ chrony_package }}"
+    state: present
+  register: chrony_pkg
+  tags: [chrony, install]
+
+- name: Ensure the drop-in directory exists
+  ansible.builtin.file:
+    path: "{{ chrony_confdir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags: [chrony, config]
+
+# In check mode an install is only simulated, so on a host that does not have
+# chrony yet neither the shipped config nor the service unit exists, and every
+# task after this one fails on something absent. Gating on "did we only pretend
+# to install it" keeps --check usable as a pre-flight on exactly the fresh hosts
+# worth checking, rather than failing in a way that says nothing useful.
+- name: Note that the rest is deferred
+  ansible.builtin.debug:
+    msg: >-
+      chrony was not already installed, and check mode did not really install
+      it, so the config and service tasks are skipped. A real run installs the
+      package first and they apply normally.
+  when: ansible_check_mode and chrony_pkg is changed
+  tags: [chrony, config]
+
+# Only fires on RHEL, where confdir is absent from the shipped config. Appending
+# one line is less invasive than templating the whole file and losing the
+# distro's own driftfile, keyfile and leapsectz settings.
+- name: Register the drop-in directory in the main config
+  when: not (ansible_check_mode and chrony_pkg is changed)
+  ansible.builtin.lineinfile:
+    path: "{{ chrony_config }}"
+    line: "confdir {{ chrony_confdir }}"
+    regexp: '^\s*confdir\s'
+    state: present
+    owner: root
+    group: root
+    mode: '0644'
+    validate: '{{ chrony_binary }} -p -f %s'
+  notify: Restart chrony
+  tags: [chrony, config]
+
+# One file rather than several: conf.d is parsed in lexicographic order, and a
+# numeric prefix keeps this ahead of anything added by hand later.
+- name: Deploy the baseline drop-in
+  when: not (ansible_check_mode and chrony_pkg is changed)
+  ansible.builtin.template:
+    src: baseline.conf.j2
+    dest: "{{ chrony_confdir }}/50-baseline.conf"
+    owner: root
+    group: root
+    mode: '0644'
+    validate: '{{ chrony_binary }} -p -f %s'
+  notify: Restart chrony
+  tags: [chrony, config]
+
+- name: Enable and start chrony
+  when: not (ansible_check_mode and chrony_pkg is changed)
+  ansible.builtin.service:
+    name: "{{ chrony_service }}"
+    state: started
+    enabled: true
+  tags: [chrony, service]

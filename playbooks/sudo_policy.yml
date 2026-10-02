@@ -1,0 +1,12 @@
+# ┌──────────────────────────────────────────────────────────┐
+# │ Sudo Policy – Ansible Playbook                              │
+# │ Privileged access and its keys. Run this before sshd       │
+# │ hardening, never after.                                    │
+# └──────────────────────────────────────────────────────────┘
+
+- name: Enforce privileged account access
+  hosts: "{{ host | default('all') }}"
+  become: true
+
+  roles:
+    - sudo_policy

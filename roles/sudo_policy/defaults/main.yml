@@ -1,0 +1,39 @@
+---
+# ──[ Account ]─────────────────────────────────────────────────────────────────
+# The account this role enforces. It must already exist: creating it is
+# deliberately out of scope, because a baseline role that can mint a privileged
+# account can also mint one by accident, and the password would have to pass
+# through a role meant to be publishable.
+sudo_policy_user: sysadmin
+
+# ──[ Authorized keys ]─────────────────────────────────────────────────────────
+# Public keys in authorized_keys format, one per list entry.
+#
+# Site knowledge, so it is empty here. This repo does not know which key belongs
+# to which host; the inventory that does should set it. An empty list is a hard
+# failure rather than a no-op, because installing no keys and then handing off
+# to sshd hardening is exactly how a host becomes unreachable.
+sudo_policy_authorized_keys: []
+
+# false appends, leaving any key already on the host alone. true prunes
+# everything not listed above, which is the only way to actually revoke a key
+# and the only way to lock yourself out with a typo. Turn it on once the list is
+# known complete, with a second session held open.
+sudo_policy_exclusive_keys: false
+
+# ──[ Admin group ]─────────────────────────────────────────────────────────────
+# Empty takes the group from vars/<os_family>.yml: wheel on the RHEL family,
+# sudo on Debian. Set it only to override that.
+sudo_policy_admin_group: ""
+
+# ──[ Sudoers ]─────────────────────────────────────────────────────────────────
+# Dropped in /etc/sudoers.d. No dot in the name: sudo silently ignores any
+# drop-in whose filename contains one, which looks identical to the role having
+# done nothing.
+sudo_policy_sudoers_file: 10-baseline
+
+# An IPA-enrolled host gets its sudo rules from the realm. Local drop-ins and
+# IPA rules both apply at once, and working out afterwards which one granted
+# what is miserable, so the role defers where it finds enrolment. Set this false
+# to skip sudoers management on a host that is not enrolled either.
+sudo_policy_manage_sudoers: true

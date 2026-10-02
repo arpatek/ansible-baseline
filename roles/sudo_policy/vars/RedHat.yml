@@ -1,0 +1,5 @@
+---
+# Verified on RHEL 10.2 and Rocky Linux 9.8.
+# wheel ships uncommented in /etc/sudoers on both, so the drop-in restates a
+# rule that is already live rather than granting anything new.
+sudo_policy_admin_group_default: wheel

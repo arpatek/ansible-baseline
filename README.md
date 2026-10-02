@@ -26,6 +26,7 @@ ansible-baseline/
 │   ├── journald.yml             # Persistent journal
 │   ├── oh_my_zsh_setup.yml      # Zsh + theme + aliases
 │   ├── sshd_hardening.yml       # Secure SSH configuration
+│   ├── sudo_policy.yml          # Privileged account, keys, sudo rule
 │   └── system_tools.yml         # Core and extra CLI utilities
 └── roles/
     ├── base_system/             # Timezone, locale, MOTD
@@ -34,7 +35,8 @@ ansible-baseline/
     ├── extra_utils/             # Optional CLI tools: neovim, bat, htop, jq, tmux, etc.
     ├── journald/                # Persistent journal with size caps
     ├── oh_my_zsh/               # Zsh config, aliases, gg3 custom theme
-    └── sshd_config_hardening/   # Hardened sshd_config + restart handler
+    ├── sshd_config_hardening/   # Hardened sshd_config + restart handler
+    └── sudo_policy/             # Privileged account, authorized keys, sudoers
 ```
 
 ## Inventory
@@ -75,6 +77,7 @@ All tasks are tagged for selective execution:
 | `extra` | Extra CLI utilities |
 | `zsh` | Oh My Zsh install and config |
 | `security` | SSH hardening |
+| `sudo_policy` | Privileged account, authorized keys, sudoers drop-in |
 | `dotfiles` | All dotfile deployments |
 | `install` | All package installations |
 

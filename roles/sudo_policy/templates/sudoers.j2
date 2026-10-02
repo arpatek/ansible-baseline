@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+#
+# Deployed by the sudo_policy role in ansible-baseline. Edits here are
+# overwritten on the next run — change the role, not this file.
+#
+# Password required, deliberately. There is no NOPASSWD rule because escalation
+# credentials already come from the vault, so a passwordless rule would buy
+# nothing and would leave a stolen key one command short of root.
+
+%{{ sudo_policy_group }} ALL=(ALL:ALL) ALL

@@ -1,0 +1,5 @@
+---
+# Verified on Debian 13 (trixie) and Ubuntu 26.04.
+# Debian uses sudo rather than wheel, and wheel does not exist on a stock
+# install. The group is created if missing, so naming it here is enough.
+sudo_policy_admin_group_default: sudo

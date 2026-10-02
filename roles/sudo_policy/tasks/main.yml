@@ -1,0 +1,160 @@
+# ┌──────────────────────────────────────────────────┐
+# │ Role: sudo_policy                                  │
+# │ Working key-based privileged access, established   │
+# │ before sshd hardening takes the password away.     │
+# └──────────────────────────────────────────────────┘
+---
+# ansible-core only. ansible.posix.authorized_key is the obvious module for the
+# keys below and is deliberately not used: a host being brought up for the first
+# time should not need a collection installed before it can be reached.
+#
+# Order inside this role is load-bearing. Keys land before sudoers, because a
+# broken sudoers file still leaves you an SSH session to fix it from, and a
+# broken authorized_keys does not.
+
+# ──[ Platform ]────────────────────────────────────────────────────────────────
+- name: Note that sudo is not the privilege path here
+  ansible.builtin.debug:
+    msg: >-
+      {{ ansible_facts['distribution'] }} escalates through doas rather than
+      sudo, so there is no sudoers policy for this role to manage. Privileged
+      access here lives in /etc/doas.d and is outside the baseline.
+  when: ansible_facts['os_family'] not in ['RedHat', 'Debian']
+  tags: [sudo_policy, always]
+
+- name: Enforce the privileged account
+  when: ansible_facts['os_family'] in ['RedHat', 'Debian']
+  tags: [sudo_policy]
+  block:
+
+    - name: Load the admin group for this OS family
+      ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yml"
+
+    # Set here rather than in vars/ so the inventory can still override it:
+    # a role's vars/ outranks group_vars, which would make the per-OS value
+    # impossible to change from outside the role.
+    - name: Resolve the admin group
+      ansible.builtin.set_fact:
+        sudo_policy_group: >-
+          {{ sudo_policy_admin_group if sudo_policy_admin_group | length > 0
+             else sudo_policy_admin_group_default }}
+
+# ──[ Preflight ]───────────────────────────────────────────────────────────────
+    # Both asserts run before anything is written. Between them they are the
+    # difference between this role failing and this role locking you out.
+    - name: Look up the account
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ sudo_policy_user }}"
+        fail_key: false
+
+    - name: Fail clearly when the account does not exist
+      ansible.builtin.assert:
+        that: ansible_facts['getent_passwd'][sudo_policy_user] is not none
+        fail_msg: >-
+          There is no '{{ sudo_policy_user }}' account on this host. This role
+          enforces an existing account and does not create one, so create it
+          first, or point sudo_policy_user at the account that should hold
+          privileged access here.
+        quiet: true
+
+    - name: Fail clearly when no keys were supplied
+      ansible.builtin.assert:
+        that: sudo_policy_authorized_keys | length > 0
+        fail_msg: >-
+          sudo_policy_authorized_keys is empty. Installing no keys and then
+          handing off to sshd hardening is how a host ends up unreachable, so
+          this fails here instead of succeeding quietly. The key list is site
+          knowledge and belongs in the inventory, not in this repo.
+        quiet: true
+
+    # Read from passwd rather than assumed: a home directory is not always
+    # /home/<user>, and the group is not always one named after the account.
+    - name: Record the account's home directory and group
+      ansible.builtin.set_fact:
+        sudo_policy_home: "{{ ansible_facts['getent_passwd'][sudo_policy_user][4] }}"
+        sudo_policy_gid: "{{ ansible_facts['getent_passwd'][sudo_policy_user][2] }}"
+
+# ──[ Authorized keys ]─────────────────────────────────────────────────────────
+    - name: Ensure the .ssh directory exists
+      ansible.builtin.file:
+        path: "{{ sudo_policy_home }}/.ssh"
+        state: directory
+        owner: "{{ sudo_policy_user }}"
+        group: "{{ sudo_policy_gid }}"
+        mode: '0700'
+
+    # Appending, one key at a time, so a key already on the host survives. The
+    # label keeps the whole key out of the play output; the comment field is
+    # enough to tell which one changed.
+    - name: Add the authorized keys
+      ansible.builtin.lineinfile:
+        path: "{{ sudo_policy_home }}/.ssh/authorized_keys"
+        line: "{{ item }}"
+        create: true
+        owner: "{{ sudo_policy_user }}"
+        group: "{{ sudo_policy_gid }}"
+        mode: '0600'
+        backup: true
+      loop: "{{ sudo_policy_authorized_keys }}"
+      loop_control:
+        label: "{{ item.split()[2] | default(item.split()[0]) }}"
+      when: not sudo_policy_exclusive_keys
+
+    # The revoking path. Everything not in the list goes, which is why it is off
+    # by default and why the backup matters more here than anywhere else.
+    - name: Replace the authorized keys
+      ansible.builtin.copy:
+        dest: "{{ sudo_policy_home }}/.ssh/authorized_keys"
+        content: "{{ sudo_policy_authorized_keys | join('\n') }}\n"
+        owner: "{{ sudo_policy_user }}"
+        group: "{{ sudo_policy_gid }}"
+        mode: '0600'
+        backup: true
+      when: sudo_policy_exclusive_keys
+
+# ──[ Group membership ]────────────────────────────────────────────────────────
+    # Created rather than assumed: wheel does not exist on a stock Debian.
+    - name: Ensure the admin group exists
+      ansible.builtin.group:
+        name: "{{ sudo_policy_group }}"
+        state: present
+
+    # append is not optional. Without it the user module treats this as the
+    # complete secondary group list and silently removes every other one.
+    - name: Add the account to the admin group
+      ansible.builtin.user:
+        name: "{{ sudo_policy_user }}"
+        groups: "{{ sudo_policy_group }}"
+        append: true
+
+# ──[ Sudoers ]─────────────────────────────────────────────────────────────────
+    - name: Check whether this host is IPA-enrolled
+      ansible.builtin.stat:
+        path: /etc/ipa/default.conf
+      register: sudo_policy_ipa
+
+    - name: Note that the realm owns sudo rules here
+      ansible.builtin.debug:
+        msg: >-
+          This host is IPA-enrolled, so its sudo rules come from the realm and
+          the local drop-in is skipped. Group membership and authorized keys
+          were still applied.
+      when:
+        - sudo_policy_manage_sudoers
+        - sudo_policy_ipa.stat.exists
+
+    # validate is the whole guard. A malformed sudoers drop-in breaks sudo for
+    # every account on the host, and fixing it needs a root console; visudo -cf
+    # means a bad file is never written in the first place.
+    - name: Deploy the sudoers drop-in
+      ansible.builtin.template:
+        src: sudoers.j2
+        dest: "/etc/sudoers.d/{{ sudo_policy_sudoers_file }}"
+        owner: root
+        group: root
+        mode: '0440'
+        validate: visudo -cf %s
+      when:
+        - sudo_policy_manage_sudoers
+        - not sudo_policy_ipa.stat.exists

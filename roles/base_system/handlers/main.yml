@@ -1,0 +1,9 @@
+---
+# cron caches the timezone at start, so a tz change leaves jobs firing on the old
+# offset until it restarts. Named for both families; the task is skipped where the
+# service does not exist.
+- name: Restart cron
+  ansible.builtin.service:
+    name: "{{ 'crond' if ansible_facts['os_family'] == 'RedHat' else 'cron' }}"
+    state: restarted
+  failed_when: false

@@ -1,0 +1,23 @@
+---
+# ──[ Time ]────────────────────────────────────────────────────────────────────
+# Empty leaves the host alone. A baseline role should not decide what timezone
+# someone's fleet runs in — but an inconsistent one makes correlating logs across
+# hosts needlessly painful, so it is worth setting deliberately.
+base_system_timezone: ""
+
+# ──[ Locale ]──────────────────────────────────────────────────────────────────
+# An unset LANG falls back to C, which changes sort order and date formatting and
+# turns UTF-8 output into mojibake. Empty leaves it alone.
+base_system_locale: ""
+
+# ──[ Hostname ]────────────────────────────────────────────────────────────────
+# Off by default and deliberately so: on an IPA-enrolled host the realm owns the
+# FQDN, and forcing a short name here fights enrolment. Set it per-host only for
+# hosts that are not enrolled.
+base_system_hostname: ""
+
+# ──[ MOTD ]────────────────────────────────────────────────────────────────────
+# Note on Debian: /etc/motd is only part of the login banner — update-motd.d
+# scripts are appended at login and this does not touch them.
+base_system_motd: false
+base_system_motd_note: ""

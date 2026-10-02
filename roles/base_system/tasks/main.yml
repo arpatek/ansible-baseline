@@ -1,0 +1,126 @@
+# ┌────────────────────────────────────────────────────┐
+# │ Role: base_system                                  │
+# │ Timezone, locale and MOTD. Dull, and exactly the   │
+# │ things that drift silently on a hand-built fleet.  │
+# └────────────────────────────────────────────────────┘
+---
+# ansible-core only, no collections. community.general.timezone and locale_gen
+# would both fit, but a baseline role that needs nothing installed is one less
+# thing to get wrong on a host that is being brought up for the first time.
+
+# ──[ Timezone ]────────────────────────────────────────────────────────────────
+- name: Confirm the requested timezone exists
+  ansible.builtin.stat:
+    path: "/usr/share/zoneinfo/{{ base_system_timezone }}"
+  register: base_system_tz_file
+  when: base_system_timezone | length > 0
+  tags: [base_system, time]
+
+- name: Fail clearly on an unknown timezone
+  ansible.builtin.assert:
+    that: base_system_tz_file.stat.exists
+    fail_msg: >-
+      '{{ base_system_timezone }}' is not in /usr/share/zoneinfo on this host.
+      Check the spelling and the Area/Location capitalisation — the names are
+      case-sensitive, so America/los_angeles silently is not a timezone.
+    quiet: true
+  when: base_system_timezone | length > 0
+  tags: [base_system, time]
+
+# The symlink is what every libc actually reads. timedatectl writes the same
+# thing but needs a running systemd, so it fails in a container where this works.
+- name: Set the timezone
+  ansible.builtin.file:
+    src: "/usr/share/zoneinfo/{{ base_system_timezone }}"
+    dest: /etc/localtime
+    state: link
+    force: true
+  when: base_system_timezone | length > 0
+  notify: Restart cron
+  tags: [base_system, time]
+
+# Debian-family tools read this file rather than resolving the symlink.
+- name: Record the timezone for Debian tooling
+  ansible.builtin.copy:
+    dest: /etc/timezone
+    content: "{{ base_system_timezone }}\n"
+    owner: root
+    group: root
+    mode: '0644'
+  when:
+    - base_system_timezone | length > 0
+    - ansible_facts['os_family'] == 'Debian'
+  notify: Restart cron
+  tags: [base_system, time]
+
+# ──[ Locale ]──────────────────────────────────────────────────────────────────
+# Checked rather than generated. Generating needs locale-gen, which is not even
+# present on Debian 13 here, and the langpack is the package manager's job. A
+# LANG pointing at a locale the host has not built falls back to C silently,
+# which is worse than failing.
+- name: Check the requested locale is available
+  ansible.builtin.command: locale -a
+  register: base_system_locales
+  changed_when: false
+  when: base_system_locale | length > 0
+  tags: [base_system, locale]
+
+- name: Fail clearly on an unavailable locale
+  ansible.builtin.assert:
+    that: >-
+      base_system_locale | lower | replace('-', '') in
+      (base_system_locales.stdout_lines | map('lower') | map('replace', '-', '') | list)
+    fail_msg: >-
+      '{{ base_system_locale }}' is not built on this host, and setting LANG to it
+      would fall back to C without saying so. Install the langpack first —
+      glibc-langpack-en on the RHEL family, the locales package plus a locale-gen
+      run on Debian.
+    quiet: true
+  when: base_system_locale | length > 0
+  tags: [base_system, locale]
+
+# Read by systemd on both families. Set directly rather than via localectl, which
+# needs a running systemd.
+- name: Set the system locale
+  ansible.builtin.copy:
+    dest: /etc/locale.conf
+    content: "LANG={{ base_system_locale }}\n"
+    owner: root
+    group: root
+    mode: '0644'
+  when: base_system_locale | length > 0
+  tags: [base_system, locale]
+
+# Debian also reads /etc/default/locale, and PAM sources it for login shells, so
+# without this a Debian host keeps whatever LANG it was imaged with.
+- name: Set the locale for Debian login shells
+  ansible.builtin.copy:
+    dest: /etc/default/locale
+    content: "LANG={{ base_system_locale }}\n"
+    owner: root
+    group: root
+    mode: '0644'
+  when:
+    - base_system_locale | length > 0
+    - ansible_facts['os_family'] == 'Debian'
+  tags: [base_system, locale]
+
+# ──[ Hostname ]────────────────────────────────────────────────────────────────
+# Off by default: on an IPA-enrolled host the realm owns the FQDN, and setting a
+# short name here would fight enrolment.
+- name: Set the hostname
+  ansible.builtin.hostname:
+    name: "{{ base_system_hostname }}"
+  when: base_system_hostname | length > 0
+  tags: [base_system, hostname]
+
+# ──[ MOTD ]────────────────────────────────────────────────────────────────────
+- name: Deploy the MOTD
+  ansible.builtin.template:
+    src: motd.j2
+    dest: /etc/motd
+    owner: root
+    group: root
+    mode: '0644'
+  when: base_system_motd
+  tags: [base_system, motd]

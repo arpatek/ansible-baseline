@@ -1,0 +1,7 @@
+
+  {{ ansible_facts['hostname'] }} — {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }} ({{ ansible_facts['architecture'] }})
+  Managed by ansible-baseline. Local changes to managed files will be overwritten.
+{% if base_system_motd_note | length > 0 %}
+
+  {{ base_system_motd_note }}
+{% endif %}

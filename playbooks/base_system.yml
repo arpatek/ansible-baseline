@@ -1,0 +1,12 @@
+# ┌────────────────────────────────────────────────────────────┐
+# │ Base System – Ansible Playbook                             │
+# │ Timezone, locale and MOTD. Every value is empty by default, │
+# │ so the role is a no-op until an inventory sets them.        │
+# └────────────────────────────────────────────────────────────┘
+
+- name: Configure base system settings
+  hosts: "{{ host | default('all') }}"
+  become: true
+
+  roles:
+    - base_system

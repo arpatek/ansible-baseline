@@ -1,0 +1,26 @@
+---
+# ──[ Storage ]─────────────────────────────────────────────────────────────────
+# persistent, not auto. With auto, journald only writes to disk if
+# /var/log/journal already exists — which is why a host can look correctly
+# configured and still lose its logs on reboot. Raspberry Pi OS ships volatile,
+# so a Pi silently forgets everything it logged.
+#
+# The cost on a Pi booting from an SD card is write wear. That is a real trade and
+# the reason the caps below are not left to systemd's default of 10% of the
+# filesystem, which on a 64GB card is 6GB of journal.
+journald_storage: persistent
+
+# ──[ Size caps ]───────────────────────────────────────────────────────────────
+# Empty leaves systemd's default. Set both on anything with limited or
+# wear-sensitive storage.
+journald_system_max_use: ""        # e.g. 500M
+journald_system_max_file_size: ""  # e.g. 50M
+journald_max_retention_sec: ""     # e.g. 1month
+
+# ──[ Behaviour ]───────────────────────────────────────────────────────────────
+journald_compress: "yes"
+
+# Off: with a persistent journal, forwarding to syslog writes everything twice.
+# Turn it on only where something actually reads /var/log/messages — a log
+# shipper pointed at files rather than at the journal, for instance.
+journald_forward_to_syslog: "no"

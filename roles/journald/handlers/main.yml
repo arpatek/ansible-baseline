@@ -1,0 +1,7 @@
+---
+# A restart, not a reload: journald re-reads some settings on SIGUSR1 but not
+# Storage, which is the one that matters here.
+- name: Restart systemd-journald
+  ansible.builtin.service:
+    name: systemd-journald
+    state: restarted

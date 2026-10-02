@@ -1,0 +1,12 @@
+# ┌────────────────────────────────────────────────────────────┐
+# │ Journald – Ansible Playbook                                │
+# │ Makes the journal survive a reboot. Skipped on hosts        │
+# │ without systemd rather than failing.                        │
+# └────────────────────────────────────────────────────────────┘
+
+- name: Configure the systemd journal
+  hosts: "{{ host | default('all') }}"
+  become: true
+
+  roles:
+    - journald

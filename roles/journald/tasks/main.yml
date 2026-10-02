@@ -1,0 +1,57 @@
+# ┌────────────────────────────────────────────────────┐
+# │ Role: journald                                     │
+# │ Persistent logs. A host that forgets its journal on│
+# │ reboot cannot be debugged after the thing that     │
+# │ caused the reboot.                                 │
+# └────────────────────────────────────────────────────┘
+---
+# Skipped rather than failed on a host without systemd: there is no journald to
+# configure, which is a different situation from a role that cannot work. Alpine
+# logs through busybox syslog and needs its own role if that is worth managing.
+- name: Note that journald does not apply here
+  ansible.builtin.debug:
+    msg: >-
+      {{ ansible_facts['service_mgr'] }} is the service manager on this host, not
+      systemd, so there is no journald to configure.
+  when: ansible_facts['service_mgr'] != 'systemd'
+  tags: [journald, always]
+
+# A drop-in rather than editing journald.conf, for the same reason as chrony: the
+# shipped file is the package's, and every setting in it is commented out anyway,
+# so replacing it gains nothing and loses the documentation.
+- name: Ensure the drop-in directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: ansible_facts['service_mgr'] == 'systemd'
+  tags: [journald, config]
+
+- name: Deploy the journald drop-in
+  ansible.builtin.template:
+    src: baseline.conf.j2
+    dest: /etc/systemd/journald.conf.d/50-baseline.conf
+    owner: root
+    group: root
+    mode: '0644'
+  when: ansible_facts['service_mgr'] == 'systemd'
+  notify: Restart systemd-journald
+  tags: [journald, config]
+
+# Storage=persistent makes journald create this itself on restart, but doing it
+# here means the directory exists with the right mode before the restart rather
+# than after it, so nothing is logged to a tmpfs in between.
+- name: Ensure the persistent journal directory exists
+  ansible.builtin.file:
+    path: /var/log/journal
+    state: directory
+    owner: root
+    group: systemd-journal
+    mode: '2755'
+  when:
+    - ansible_facts['service_mgr'] == 'systemd'
+    - journald_storage in ['persistent', 'auto']
+  notify: Restart systemd-journald
+  tags: [journald, config]

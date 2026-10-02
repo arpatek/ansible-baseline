@@ -1,0 +1,17 @@
+# Managed by ansible-baseline, role: journald. Local edits will be overwritten.
+#
+# A drop-in read from /etc/systemd/journald.conf.d. Anything not set here keeps
+# whatever /etc/systemd/journald.conf left it as.
+[Journal]
+Storage={{ journald_storage }}
+Compress={{ journald_compress }}
+ForwardToSyslog={{ journald_forward_to_syslog }}
+{% if journald_system_max_use | length > 0 %}
+SystemMaxUse={{ journald_system_max_use }}
+{% endif %}
+{% if journald_system_max_file_size | length > 0 %}
+SystemMaxFileSize={{ journald_system_max_file_size }}
+{% endif %}
+{% if journald_max_retention_sec | length > 0 %}
+MaxRetentionSec={{ journald_max_retention_sec }}
+{% endif %}

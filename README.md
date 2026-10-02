@@ -21,12 +21,18 @@ ansible-baseline/
 ├── LICENSE                      # MIT License
 ├── playbooks/
 │   ├── full_setup.yml           # Full-stack provisioning (all roles)
+│   ├── base_system.yml          # Timezone, locale, MOTD
+│   ├── chrony.yml               # Time synchronisation
+│   ├── journald.yml             # Persistent journal
 │   ├── oh_my_zsh_setup.yml      # Zsh + theme + aliases
 │   ├── sshd_hardening.yml       # Secure SSH configuration
 │   └── system_tools.yml         # Core and extra CLI utilities
 └── roles/
+    ├── base_system/             # Timezone, locale, MOTD
+    ├── chrony/                  # Time sync, optional LAN serving
     ├── core_utils/              # Essential tools: git, vim, curl, zsh
     ├── extra_utils/             # Optional CLI tools: neovim, bat, htop, jq, tmux, etc.
+    ├── journald/                # Persistent journal with size caps
     ├── oh_my_zsh/               # Zsh config, aliases, gg3 custom theme
     └── sshd_config_hardening/   # Hardened sshd_config + restart handler
 ```
